@@ -1,0 +1,7 @@
+{
+  "name": "深铁精指 - 深圳地铁精准指引",
+  "description": "提供深圳地铁全链路最优路径规划，包含车厢及车门级精准换乘与出站指引。",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
