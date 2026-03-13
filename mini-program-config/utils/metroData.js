@@ -1,18 +1,4 @@
-export interface Station {
-  id: string;
-  name: string;
-  lines: string[];
-  entrances: string[];
-}
-
-export interface Line {
-  id: string;
-  name: string;
-  color: string;
-  stations: string[];
-}
-
-export const METRO_LINES: Line[] = [
+const METRO_LINES = [
   {
     id: "1",
     name: "1号线 (罗宝线)",
@@ -40,7 +26,7 @@ export const METRO_LINES: Line[] = [
   {
     id: "5",
     name: "5号线 (环中线)",
-    color: " #a04dac",
+    color: "#a04dac",
     stations: ["赤湾", "荔湾", "铁路公园", "妈湾", "前湾公园", "前湾", "桂湾", "前海湾", "临海", "宝华", "宝安中心", "翻身", "灵芝", "洪浪北", "兴东", "留仙洞", "西丽", "大学城", "塘朗", "长岭陂", "深圳北站", "民治", "五和", "坂田", "杨美", "上水径", "下水径", "长龙", "布吉", "百鸽笼", "布心", "太安", "怡景", "黄贝岭", "湖贝", "东门", "大剧院"]
   },
   {
@@ -111,9 +97,8 @@ export const METRO_LINES: Line[] = [
   }
 ];
 
-// Helper to get all unique stations
-export const ALL_STATIONS: Station[] = (() => {
-  const stationMap = new Map<string, Station>();
+const ALL_STATIONS = (() => {
+  const stationMap = new Map();
   
   METRO_LINES.forEach(line => {
     line.stations.forEach(stationName => {
@@ -122,11 +107,10 @@ export const ALL_STATIONS: Station[] = (() => {
           id: stationName,
           name: stationName,
           lines: [line.id],
-          // Mocking entrances for now
           entrances: ["A", "B", "C", "D"]
         });
       } else {
-        const station = stationMap.get(stationName)!;
+        const station = stationMap.get(stationName);
         if (!station.lines.includes(line.id)) {
           station.lines.push(line.id);
         }
@@ -136,3 +120,8 @@ export const ALL_STATIONS: Station[] = (() => {
   
   return Array.from(stationMap.values());
 })();
+
+module.exports = {
+  METRO_LINES,
+  ALL_STATIONS
+};

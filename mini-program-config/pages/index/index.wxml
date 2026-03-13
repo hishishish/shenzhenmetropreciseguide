@@ -1,0 +1,229 @@
+<!-- pages/index/index.wxml -->
+<view class="container">
+  <!-- Custom Nav Bar -->
+  <view class="wechat-nav">
+    <text>深铁精指</text>
+  </view>
+
+  <scroll-view class="content-scroll" scroll-y="true" show-scrollbar="{{false}}">
+    <view wx:if="{{activeTab === 'home'}}">
+      <view class="header-section">
+        <view class="title-row">
+          <view class="title-line"></view>
+          <text class="title-text">换乘指引</text>
+        </view>
+        <text class="subtitle-text">Shenzhen Metro Precise Guide</text>
+      </view>
+
+      <!-- Input Section -->
+      <view class="picker-card">
+        <view class="picker-icon-wrap">
+          <text class="picker-icon">📍</text>
+        </view>
+        <view class="picker-content">
+          <text class="picker-label">起点站</text>
+          <input class="picker-input" placeholder="您从哪儿出发？" value="{{startStation}}" bindinput="onInputStart" />
+        </view>
+      </view>
+
+      <view class="swap-wrap">
+        <view class="swap-btn" bindtap="swapStations">
+          <text class="swap-icon">⇅</text>
+        </view>
+      </view>
+
+      <view class="picker-card">
+        <view class="picker-icon-wrap">
+          <text class="picker-icon">📍</text>
+        </view>
+        <view class="picker-content">
+          <text class="picker-label">终点站</text>
+          <input class="picker-input" placeholder="您要去哪儿？" value="{{endStation}}" bindinput="onInputEnd" />
+        </view>
+      </view>
+
+      <button class="plan-btn" bindtap="handlePlan">
+        开始规划 <text>→</text>
+      </button>
+
+      <!-- Results Section -->
+      <view wx:if="{{hasPlanned}}" class="results-section">
+        <view class="results-header">
+          <text class="results-title">推荐路线</text>
+          <text class="results-badge">实时计算</text>
+        </view>
+
+        <view wx:if="{{routes.length === 0}}" class="no-results">
+          未找到可用路线
+        </view>
+
+        <view wx:for="{{routes}}" wx:key="index" class="route-card" bindtap="showDetail" data-index="{{index}}">
+          <view wx:if="{{index === 0}}" class="best-badge">最优推荐</view>
+          
+          <view class="route-meta">
+            <text class="meta-icon">🕒</text>
+            <text class="meta-text">{{item.totalStops}} 站 · {{item.transfers}} 次换乘</text>
+          </view>
+
+          <view class="route-visual">
+            <block wx:for="{{item.steps}}" wx:for-item="step" wx:key="idx" wx:for-index="idx">
+              <text wx:if="{{idx === 0}}" class="visual-station">{{step.from}}</text>
+              
+              <view wx:if="{{step.type === 'ride'}}" class="visual-line" style="background-color: {{lineColors[step.lineId]}}10; border-color: {{lineColors[step.lineId]}}30">
+                <view class="line-dot" style="background-color: {{lineColors[step.lineId]}}"></view>
+                <text class="line-name" style="color: {{lineColors[step.lineId]}}">{{step.lineId}}号线</text>
+              </view>
+
+              <block wx:if="{{step.type === 'transfer'}}">
+                <text class="visual-arrow">></text>
+                <view class="visual-transfer">
+                  <view class="transfer-icon-small">换</view>
+                  <text>{{step.from}}</text>
+                </view>
+                <text class="visual-arrow">></text>
+              </block>
+
+              <block wx:if="{{idx === item.steps.length - 1}}">
+                <text class="visual-arrow">></text>
+                <text class="visual-station">{{step.to}}</text>
+              </block>
+            </block>
+          </view>
+        </view>
+      </view>
+
+      <view class="footer">
+        <text class="footer-text">Powered by Hish Yu 2026</text>
+      </view>
+    </view>
+
+    <view wx:if="{{activeTab === 'map'}}" class="map-view">
+      <view class="metro-map-wrap">
+        <image class="metro-map" src="https://www.szmc.net/static/upload/image/20231227/1703644485548054.jpg" mode="widthFix" show-menu-by-longpress="true"></image>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- Bottom Tab Bar -->
+  <view class="tab-bar">
+    <view class="tab-item {{activeTab === 'home' ? 'active' : ''}}" bindtap="switchTab" data-tab="home">
+      <text class="tab-icon">🧭</text>
+      <text class="tab-text">规划</text>
+    </view>
+    <view class="tab-item {{activeTab === 'map' ? 'active' : ''}}" bindtap="switchTab" data-tab="map">
+      <text class="tab-icon">🗺️</text>
+      <text class="tab-text">线路图</text>
+    </view>
+    <view class="tab-item">
+      <text class="tab-icon">🔍</text>
+      <text class="tab-text">查询</text>
+    </view>
+  </view>
+
+  <!-- Detail Modal -->
+  <view class="modal" wx:if="{{showModal}}">
+    <view class="modal-mask" bindtap="closeModal"></view>
+    <view class="modal-content">
+      <view class="modal-header">
+        <text class="modal-title">换乘详情</text>
+        <text class="close-icon" bindtap="closeModal">×</text>
+      </view>
+      <scroll-view class="modal-body" scroll-y="true">
+        <view wx:for="{{selectedRoute.steps}}" wx:key="index" class="detail-step">
+          <block wx:if="{{item.type === 'ride'}}">
+            <view class="step-line" style="background-color: {{lineColors[item.lineId]}}"></view>
+            <view class="step-node" style="border-color: {{lineColors[item.lineId]}}">
+              <view class="node-dot" style="background-color: {{lineColors[item.lineId]}}"></view>
+            </view>
+            
+            <view class="step-content">
+              <view class="step-station-row">
+                <text class="step-station-name">{{item.from}}</text>
+                <text class="step-line-badge" style="background-color: {{lineColors[item.lineId]}}">{{item.lineId}}号line</text>
+              </view>
+              <text class="step-ride-info">乘坐 <text class="step-ride-bold">{{item.lineId}}号线</text> 往 <text class="step-ride-bold">{{item.direction}}</text></text>
+              <view class="step-meta" bindtap="toggleStops" data-index="{{index}}">
+                <text>📍 {{item.stops.length}} 站 (点击查看详情)</text>
+              </view>
+
+              <!-- Stops List -->
+              <view wx:if="{{item.showStops}}" class="stops-list">
+                <view wx:for="{{item.stops}}" wx:for-item="stop" wx:key="*this" class="stop-item-detail">
+                  <view class="stop-dot"></view>
+                  <text class="stop-name">{{stop}}</text>
+                </view>
+              </view>
+
+              <!-- Transfer Info Card -->
+              <view wx:if="{{selectedRoute.steps[index+1].type === 'transfer'}}" class="transfer-card">
+                <view class="transfer-header">
+                  <view class="transfer-title-wrap">
+                    <view class="transfer-icon-bg">
+                      <text class="transfer-icon">🔄</text>
+                    </view>
+                    <view>
+                      <text class="transfer-main-title">换乘：{{selectedRoute.steps[index+1].from}}</text>
+                      <text class="transfer-sub-title">换乘至 {{selectedRoute.steps[index+2].lineId}}号线</text>
+                    </view>
+                  </view>
+                  <view class="transfer-badge-group">
+                    <text class="transfer-method-badge">{{selectedRoute.steps[index+1].transferDetail.method || '节点'}}换乘</text>
+                    <text wx:if="{{selectedRoute.steps[index+1].transferDetail.time}}" class="transfer-time-badge">🕒 {{selectedRoute.steps[index+1].transferDetail.time}}</text>
+                  </view>
+                </view>
+
+                <block wx:if="{{selectedRoute.steps[index+1].transferDetail}}">
+                  <view class="transfer-grid">
+                    <view class="grid-item">
+                      <text class="grid-label">车厢</text>
+                      <text class="grid-value">{{selectedRoute.steps[index+1].transferDetail.cars.join(', ')}}</text>
+                    </view>
+                    <view class="grid-item">
+                      <text class="grid-label">车门</text>
+                      <text class="grid-value">{{selectedRoute.steps[index+1].transferDetail.doors.join(', ')}}</text>
+                    </view>
+                    <view class="grid-item">
+                      <text class="grid-label">开门</text>
+                      <text class="grid-value">{{selectedRoute.steps[index+1].transferDetail.doorSide}}</text>
+                    </view>
+                  </view>
+
+                  <!-- Train Viz -->
+                  <view class="train-viz">
+                    <view class="train-head-row">
+                      <view class="train-head-indicator" style="left: {{selectedRoute.steps[index+1].headPos}}%">
+                        <text class="head-arrow">←</text>
+                        <text class="head-text">车头</text>
+                      </view>
+                    </view>
+                    <view class="train-cars">
+                      <view wx:for="{{[1,2,3,4,5,6,7,8]}}" wx:for-item="carIdx" wx:key="carIdx" wx:if="{{carIdx <= selectedRoute.steps[index+1].totalCars}}" class="car-box {{selectedRoute.steps[index+1].recommendedCars[carIdx] ? 'recommended' : ''}}">
+                        {{carIdx}}
+                      </view>
+                    </view>
+                  </view>
+
+                  <view class="transfer-notes">
+                    <text class="notes-icon">ℹ️</text>
+                    <text class="notes-text">{{selectedRoute.steps[index+1].transferDetail.notes}}</text>
+                  </view>
+                </block>
+              </view>
+            </view>
+          </block>
+
+          <block wx:if="{{index === selectedRoute.steps.length - 1}}">
+            <view class="arrival-node">
+              <view class="arrival-icon-wrap">
+                <text class="arrival-icon">✓</text>
+              </view>
+              <text class="arrival-text">到达 {{item.to}}</text>
+            </view>
+          </block>
+        </view>
+      </scroll-view>
+    </view>
+  </view>
+</view>
+
+
