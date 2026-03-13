@@ -502,7 +502,7 @@ export default function App() {
           <div className="h-full w-full overflow-auto touch-pan-x touch-pan-y bg-stone-100 flex items-start justify-start p-2">
             <div className="min-w-max min-h-max">
               <img 
-                src="https://www.szmc.net/static/upload/image/20231227/1703644485548054.jpg" 
+                src="https://imgbdb4.bendibao.com/szbdb/jt/202512/29/20251229110052_56398.png" 
                 alt="深圳地铁线路图"
                 className="max-w-none w-[1200px] shadow-2xl rounded-lg"
                 referrerPolicy="no-referrer"
@@ -534,7 +534,13 @@ export default function App() {
           onClick={() => setActiveTab('map')}
           className={`flex flex-col items-center gap-1 transition-colors ${activeTab === 'map' ? 'text-emerald-600' : 'text-stone-400'}`}
         >
-          <MapIcon className="w-5 h-5" />
+          <div className={`w-5 h-5 rounded-sm overflow-hidden border ${activeTab === 'map' ? 'border-emerald-500' : 'border-stone-200'}`}>
+            <img 
+              src="https://imgbdb4.bendibao.com/szbdb/jt/202512/29/20251229110052_56398.png" 
+              className="w-full h-full object-cover" 
+              referrerPolicy="no-referrer" 
+            />
+          </div>
           <span className="text-[10px] font-bold">线路图</span>
         </button>
         <button className="flex flex-col items-center gap-1 text-stone-400">

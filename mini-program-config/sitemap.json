@@ -1,7 +1,0 @@
-{
-  "desc": "关于小程序搜索解决方案详见：https://developers.weixin.qq.com/miniprogram/dev/framework/sitemap.html",
-  "rules": [{
-  "action": "allow",
-  "page": "*"
-  }]
-}
